@@ -3,7 +3,7 @@
 import { useState } from "react";
 import PythonRunner from "./PythonRunner";
 
-const STARTER = `# Travis Software — Python playground
+const STARTER = `# CodeNest — Python playground
 # Everything here runs locally in your browser. Press Ctrl+Enter to run.
 
 def fizzbuzz(n):
@@ -129,7 +129,7 @@ export default function Playground() {
           allowStdin
           minHeight={340}
           fill
-          storageKey={snippet === 1 ? "travis:playground:draft" : undefined}
+          storageKey={snippet === 1 ? "codenest:playground:draft" : undefined}
         />
       </div>
     </div>

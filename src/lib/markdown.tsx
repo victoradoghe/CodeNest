@@ -11,12 +11,20 @@ import type { ReactNode } from "react";
  * dangerouslySetInnerHTML anywhere and content cannot inject markup.
  */
 
-let keySeed = 0;
-const nextKey = () => `md-${keySeed++}`;
+/**
+ * Keys are positional and start from zero on every render.
+ *
+ * A module-level counter would hand React a different key for the same piece of
+ * prose each time the tree re-rendered — and a lesson re-renders whenever an
+ * exercise is solved — which unmounts and rebuilds the paragraph, throwing away
+ * the reader's text selection. Keys only have to be unique among siblings, so
+ * counting within each call is both correct and stable.
+ */
 
 /** Inline formatting: `code`, **bold**, *italic*, [text](href). */
 function renderInline(text: string): ReactNode[] {
   const nodes: ReactNode[] = [];
+  let key = 0;
   // Ordered so that `code` wins over everything inside it.
   const pattern =
     /(`[^`]+`)|(\*\*[^*]+\*\*)|(\*[^*\n]+\*)|(\[[^\]]+\]\([^)]+\))/g;
@@ -31,15 +39,15 @@ function renderInline(text: string): ReactNode[] {
     const token = match[0];
 
     if (token.startsWith("`")) {
-      nodes.push(<code key={nextKey()}>{token.slice(1, -1)}</code>);
+      nodes.push(<code key={key++}>{token.slice(1, -1)}</code>);
     } else if (token.startsWith("**")) {
       nodes.push(
-        <strong key={nextKey()} className="font-semibold">
+        <strong key={key++} className="font-semibold">
           {token.slice(2, -2)}
         </strong>,
       );
     } else if (token.startsWith("*")) {
-      nodes.push(<em key={nextKey()}>{token.slice(1, -1)}</em>);
+      nodes.push(<em key={key++}>{token.slice(1, -1)}</em>);
     } else {
       const linkMatch = /^\[([^\]]+)\]\(([^)]+)\)$/.exec(token);
       if (linkMatch) {
@@ -48,7 +56,7 @@ function renderInline(text: string): ReactNode[] {
         const safe = /^(https?:|\/|#)/.test(href) ? href : "#";
         nodes.push(
           <a
-            key={nextKey()}
+            key={key++}
             href={safe}
             {...(safe.startsWith("http")
               ? { target: "_blank", rel: "noreferrer noopener" }
@@ -127,7 +135,7 @@ export function Markdown({ children }: { children: string }) {
 
   const flushParagraph = () => {
     if (paragraph.length === 0) return;
-    blocks.push(<p key={nextKey()}>{renderInline(paragraph.join(" "))}</p>);
+    blocks.push(<p key={blocks.length}>{renderInline(paragraph.join(" "))}</p>);
     paragraph = [];
   };
 
@@ -151,7 +159,7 @@ export function Markdown({ children }: { children: string }) {
       }
       blocks.push(
         <pre
-          key={nextKey()}
+          key={blocks.length}
           className="my-4 overflow-x-auto rounded-lg border border-border bg-surface-2 p-3 font-mono text-[13px] leading-relaxed"
         >
           <code>{code.join("\n")}</code>
@@ -163,7 +171,7 @@ export function Markdown({ children }: { children: string }) {
     // Heading
     if (trimmed.startsWith("### ")) {
       flushParagraph();
-      blocks.push(<h3 key={nextKey()}>{renderInline(trimmed.slice(4))}</h3>);
+      blocks.push(<h3 key={blocks.length}>{renderInline(trimmed.slice(4))}</h3>);
       continue;
     }
 
@@ -181,7 +189,7 @@ export function Markdown({ children }: { children: string }) {
         i++;
       }
       i--;
-      blocks.push(<Table key={nextKey()} rows={rows} />);
+      blocks.push(<Table key={blocks.length} rows={rows} />);
       continue;
     }
 
@@ -204,9 +212,9 @@ export function Markdown({ children }: { children: string }) {
       i--;
       const List = ordered ? "ol" : "ul";
       blocks.push(
-        <List key={nextKey()}>
-          {items.map((item) => (
-            <li key={nextKey()}>{renderInline(item)}</li>
+        <List key={blocks.length}>
+          {items.map((item, index) => (
+            <li key={index}>{renderInline(item)}</li>
           ))}
         </List>,
       );

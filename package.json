@@ -1,20 +1,24 @@
 {
-  "name": "travis-software",
+  "name": "codenest",
   "version": "0.1.0",
   "private": true,
   "description": "An offline-first Next.js course that teaches Python, with real CPython running in the browser via WebAssembly.",
   "scripts": {
     "predev": "node scripts/copy-pyodide.mjs",
     "dev": "next dev",
-    "prebuild": "node scripts/copy-pyodide.mjs",
+    "prebuild": "node scripts/copy-pyodide.mjs && node scripts/generate-icons.mjs",
     "build": "next build",
+    "postbuild": "node scripts/generate-sw-precache.mjs",
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "sync:pyodide": "node scripts/copy-pyodide.mjs",
+    "icons": "node scripts/generate-icons.mjs",
     "verify": "node scripts/verify-content.mjs",
     "verify:worker": "node scripts/verify-worker.mjs",
-    "check": "pnpm typecheck && pnpm lint && pnpm verify && pnpm verify:worker"
+    "verify:offline": "node scripts/verify-offline.mjs",
+    "check": "pnpm typecheck && pnpm lint && pnpm verify && pnpm verify:worker",
+    "check:all": "pnpm check && pnpm build && pnpm verify:offline"
   },
   "dependencies": {
     "@codemirror/autocomplete": "^6.20.3",

@@ -27,7 +27,7 @@ export const functions: Module = {
           runnable: true,
           code: `def greet():
     print("Hello!")
-    print("Welcome to Travis Software.")
+    print("Welcome to CodeNest.")
 
 print("Defined, but nothing has run yet.")
 
@@ -35,9 +35,9 @@ greet()      # now the body runs
 greet()      # and again — that is the point`,
           output: `Defined, but nothing has run yet.
 Hello!
-Welcome to Travis Software.
+Welcome to CodeNest.
 Hello!
-Welcome to Travis Software.`,
+Welcome to CodeNest.`,
         },
         {
           kind: "text",

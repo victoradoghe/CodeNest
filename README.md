@@ -1,4 +1,4 @@
-# Travis Software — Learn Python Offline
+# CodeNest — Learn Python Offline
 
 A complete, self-contained Python course built with Next.js. Nineteen lessons
 take a beginner from their first `print()` to classes, files and a capstone
@@ -19,9 +19,35 @@ Nothing is fetched from a third party at runtime:
 | Icons | `lucide-react`, bundled |
 | Lesson content | Plain TypeScript data compiled into the bundle — no CMS, no API, no database |
 | Progress | `localStorage` in your own browser |
+| Second visit | A service worker serves every page, script and the interpreter from the cache |
 
 Load the site once and it keeps working with Wi-Fi off. Nothing is uploaded
 anywhere; there is no account and no server component.
+
+### The service worker is what makes the reload work
+
+Serving everything from our own origin is necessary but not sufficient: a reload
+with no connection never reaches the server at all, and a lesson the learner has
+not opened yet has nothing to fall back on. `public/sw.js` closes that gap.
+
+On install it precaches **every page of the course** together with the hashed
+JavaScript Next.js needs to hydrate them — the pages alone would render as dead
+HTML with no Run button. The Pyodide runtime is cached on first use instead of
+eagerly, so a first visit is not held up by a 12 MB download.
+
+| Request | Strategy |
+| --- | --- |
+| `/pyodide/*` | Cache-first, in a cache keyed on the **Pyodide version** so ordinary deploys do not re-download the interpreter |
+| `/_next/static/*` | Cache-first — the filenames are content-hashed |
+| Page navigations | Network-first, falling back to the cached page, then to the course outline |
+| Client navigation payloads | Network-first, kept in their own cache so the router is never handed an HTML document |
+
+The precache list cannot be written by hand — the asset filenames only exist
+after a build — so `scripts/generate-sw-precache.mjs` derives it from the lesson
+content and `.next/static` during `postbuild`.
+
+A `manifest.webmanifest` and generated icons make the course installable, so it
+can be opened from the home screen with no connection at all.
 
 ## Getting started
 
@@ -39,25 +65,49 @@ pnpm build       # production build (static-generates every lesson)
 pnpm start       # serve the production build
 pnpm typecheck   # tsc --noEmit
 pnpm lint        # eslint
+pnpm check       # typecheck + lint + both content verifiers
 pnpm sync:pyodide  # re-copy the Python runtime by hand
+pnpm icons       # repaint the app icons
 ```
 
 `pnpm sync:pyodide` runs automatically before `dev` and `build`, so
-`public/pyodide` is always in step with the installed version.
+`public/pyodide` is always in step with the installed version. The service
+worker's precache list is regenerated after every build.
+
+The service worker is registered **in production builds only** — one caching
+Next.js's dev assets would fight with hot reloading. Use `pnpm build && pnpm
+start` when working on anything offline-related.
 
 ### Verifying it really works offline
 
+Automatically, with no browser:
+
+```bash
+pnpm build
+pnpm verify:offline
+```
+
+That starts the production server, runs the real `public/sw.js` in a sandbox
+that supplies the service worker globals, fires a genuine install, warms the
+interpreter — and then **kills the server** and replays a navigation to every
+lesson plus every asset. Anything not in the cache fails with a connection
+error, so a hole in the precache list surfaces as a failing check rather than as
+a learner staring at a blank page.
+
+By hand, in a browser:
+
 1. `pnpm build && pnpm start`
 2. Load the site and open a lesson; press **Run** once so the Python runtime is
-   cached by the browser.
+   cached.
 3. Disconnect the network (or tick *Offline* in the browser devtools).
-4. Reload. Lessons, exercises, quizzes and the playground all still work.
+4. Reload. Lessons, exercises, quizzes and the playground all still work —
+   including lessons you never opened while online.
 
 ## How the Python execution works
 
-`public/py-worker.js` is a **classic Web Worker** — deliberately not bundled, so
-it can `importScripts("/pyodide/pyodide.js")` with no bundler involvement and no
-network access.
+`public/py-worker.js` is a **module Web Worker**, created with `{ type: "module" }`
+and deliberately left out of the bundle so it can `import` Pyodide's ESM build
+straight from `/pyodide/` — no bundler involvement and no network access.
 
 Running Python off the main thread buys two things:
 
@@ -114,6 +164,7 @@ src/
     CodeEditor.tsx           CodeMirror 6, Python mode, theme-aware
     LessonBody.tsx           renders content blocks
     Quiz.tsx, Sidebar.tsx, …
+    ServiceWorkerRegistrar.tsx  registers sw.js in production builds
   lib/
     python-runtime.tsx       worker lifecycle, shared by every editor
     markdown.tsx             small renderer — React nodes, no raw HTML
@@ -121,10 +172,22 @@ src/
     theme.tsx                light/dark, no flash on load
 public/
   py-worker.js               Python worker (hand-written, unbundled)
+  sw.js                      offline service worker (hand-written)
+  manifest.webmanifest       makes the course installable
   pyodide/                   runtime, copied from node_modules at build
+  sw-precache.js             generated precache list
+  icons/                     generated app icons
 scripts/
-  copy-pyodide.mjs
+  copy-pyodide.mjs           runtime → public/pyodide
+  generate-sw-precache.mjs   routes + hashed assets → public/sw-precache.js
+  generate-icons.mjs         paints the app icons
+  verify-content.mjs         runs every sample and exercise against real Python
+  verify-worker.mjs          drives py-worker.js end to end
+  verify-offline.mjs         proves the site loads with the server down
 ```
+
+`pyodide/`, `sw-precache.js` and `icons/` are generated during `prebuild` /
+`postbuild`, so they are not committed.
 
 ## Adding a lesson
 

@@ -45,10 +45,10 @@ You can pass several values at once, separated by commas. Python puts a single s
         {
           kind: "code",
           runnable: true,
-          code: `print("Travis", "Software", 2026)
+          code: `print("CodeNest", 2026)
 print("Line one")
 print("Line two")`,
-          output: `Travis Software 2026
+          output: `CodeNest 2026
 Line one
 Line two`,
         },
@@ -88,7 +88,7 @@ print("Visible")  # ...and so is everything after the hash here.
 # then print your name on the second line.
 `,
           solution: `print("Hello, world!")
-print("Travis")`,
+print("Ada")`,
           hint: "Two separate print() calls, one per line.",
           tests: `lines = [l for l in _OUT.strip().split("\\n") if l.strip()]
 assert len(lines) >= 2, "Expected two lines of output, got %d" % len(lines)
@@ -532,7 +532,7 @@ A **method** is a function attached to a value, called with a dot: \`value.metho
         {
           kind: "code",
           runnable: true,
-          code: `messy = "  Travis Software  "
+          code: `messy = "  CodeNest  "
 
 print(messy.strip())              # remove whitespace from both ends
 print(messy.strip().upper())      # methods chain left to right
@@ -541,9 +541,9 @@ print("a,b,c".split(","))         # split into a list on a separator
 print("-".join(["2026", "08", "09"]))
 print("python".replace("py", "PY"))
 print("report.pdf".endswith(".pdf"))
-print("Travis" in "Travis Software")   # substring test`,
-          output: `Travis Software
-TRAVIS SOFTWARE
+print("Code" in "CodeNest")   # substring test`,
+          output: `CodeNest
+CODENEST
 Hello
 ['a', 'b', 'c']
 2026-08-09

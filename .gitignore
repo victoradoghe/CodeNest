@@ -44,6 +44,13 @@ next-env.d.ts
 # Regenerated automatically by `pnpm dev` / `pnpm build`, so it is not committed.
 /public/pyodide/
 
+# Service worker precache list — written from the build output by
+# scripts/generate-sw-precache.mjs, so it is meaningless outside a build.
+/public/sw-precache.js
+
+# App icons, painted by scripts/generate-icons.mjs during prebuild.
+/public/icons/
+
 # local run artefacts
 server.log
 server.err.log

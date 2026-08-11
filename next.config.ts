@@ -31,6 +31,16 @@ const nextConfig: NextConfig = {
           { key: "Content-Type", value: "application/javascript; charset=utf-8" },
         ],
       },
+      {
+        // The service worker and its generated precache list must never be
+        // served stale: a cached copy of either would pin returning visitors to
+        // an old build whose hashed assets no longer exist.
+        source: "/:file(sw.js|sw-precache.js)",
+        headers: [
+          { key: "Cache-Control", value: "no-cache, must-revalidate" },
+          { key: "Content-Type", value: "application/javascript; charset=utf-8" },
+        ],
+      },
     ];
   },
 };

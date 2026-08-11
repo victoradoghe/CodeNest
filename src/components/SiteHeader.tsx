@@ -26,10 +26,10 @@ export default function SiteHeader() {
             }}
             aria-hidden
           >
-            T
+            C
           </span>
           <span className="text-[15px] font-semibold tracking-tight">
-            Travis<span className="text-muted"> Software</span>
+            CodeNest
           </span>
         </Link>
 

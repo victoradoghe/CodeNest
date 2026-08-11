@@ -13,7 +13,7 @@ import {
 export type ThemePref = "light" | "dark" | "system";
 export type ResolvedTheme = "light" | "dark";
 
-const STORAGE_KEY = "travis:theme";
+const STORAGE_KEY = "codenest:theme";
 
 /**
  * Runs before first paint to stamp data-theme on <html>, so the page never

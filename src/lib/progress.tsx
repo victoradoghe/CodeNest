@@ -10,7 +10,7 @@ import {
   type ReactNode,
 } from "react";
 
-const STORAGE_KEY = "travis:progress:v1";
+const STORAGE_KEY = "codenest:progress:v1";
 
 export type ProgressState = {
   /** Lesson slugs the learner has marked complete. */

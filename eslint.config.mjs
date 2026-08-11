@@ -15,6 +15,8 @@ const eslintConfig = defineConfig([
     // The Pyodide runtime is third-party generated output copied in at build
     // time — megabytes of minified wasm glue that we neither wrote nor edit.
     "public/pyodide/**",
+    // Generated from the build output by scripts/generate-sw-precache.mjs.
+    "public/sw-precache.js",
   ]),
 ]);
 
